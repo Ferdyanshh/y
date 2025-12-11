@@ -1,0 +1,18 @@
+# 1. Base image
+FROM node:18
+
+# 2. Set working directory
+WORKDIR /app
+
+# 3. Copy package.json dan install dependencies
+COPY package.json .
+RUN npm install
+
+# 4. Copy seluruh source code
+COPY . .
+
+# 5. Expose port default React
+EXPOSE 3000
+
+# 6. Jalankan React app
+CMD ["npm", "start"]
