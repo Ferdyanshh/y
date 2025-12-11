@@ -2,67 +2,88 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../model/user');
+const db = require('../config/db');
 
-// --- MIDDLEWARE CEK TOKEN ---
+// --- MIDDLEWARE VERIFIKASI TOKEN ---
+// Fungsi ini menjaga route agar hanya bisa diakses user yang sudah login
 const verifyToken = (req, res, next) => {
     const tokenHeader = req.headers['authorization'];
-    if (!tokenHeader) return res.status(403).json({ message: 'Token tidak tersedia!' });
+    
+    // Cek apakah ada header Authorization
+    if (!tokenHeader) {
+        return res.status(403).json({ message: 'Akses ditolak! Token tidak tersedia.' });
+    }
 
-    const token = tokenHeader.split(' ')[1]; // Ambil token setelah kata "Bearer"
-    if (!token) return res.status(403).json({ message: 'Format token salah!' });
+    // Format token biasanya "Bearer <token_asli>"
+    const token = tokenHeader.split(' ')[1]; 
+    if (!token) {
+        return res.status(403).json({ message: 'Format token salah!' });
+    }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(401).json({ message: 'Token tidak valid!' });
+    // Verifikasi token
+    jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token tidak valid atau kadaluarsa!' });
+        }
+        // Simpan ID user dari token ke request agar bisa dipakai di route bawahnya
         req.userId = decoded.id;
         next();
     });
 };
 
 // --- REGISTER ---
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
-    User.findByEmail(email, (err, user) => {
-        if (user) return res.status(400).json({ message: 'Email sudah terdaftar' });
-        
-        const hashedPassword = bcrypt.hashSync(password, 8);
-        User.create({ name, email, password: hashedPassword }, (err, result) => {
-            if (err) return res.status(500).json({ message: 'Gagal register' });
-            res.status(201).json({ message: 'Registrasi berhasil' });
-        });
-    });
+
+    try {
+        const [existing] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+        if (existing.length > 0) return res.status(400).json({ message: 'Email sudah dipakai!' });
+
+        const hash = bcrypt.hashSync(password, 8);
+        await db.promise().query('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', [name, email, hash]);
+
+        res.status(201).json({ message: 'Registrasi Berhasil!' });
+    } catch (err) {
+        res.status(500).json({ message: 'Database Error', error: err.message });
+    }
 });
 
 // --- LOGIN ---
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    User.findByEmail(email, (err, user) => {
-        if (!user) return res.status(404).json({ message: 'User tidak ditemukan' });
-        
-        const passwordIsValid = bcrypt.compareSync(password, user.password);
-        if (!passwordIsValid) return res.status(401).json({ message: 'Password salah' });
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: 86400 });
-        
-        res.status(200).json({ 
-            message: 'Login berhasil', 
-            accessToken: token,
-            user: { id: user.id, name: user.name, email: user.email }
-        });
-    });
+    try {
+        const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+        if (users.length === 0) return res.status(404).json({ message: 'User tidak ditemukan' });
+
+        const user = users[0];
+        if (!bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ message: 'Password Salah!' });
+        }
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: 86400 });
+
+        res.json({ message: 'Login Sukses', token, user: { name: user.name, email: user.email } });
+    } catch (err) {
+        res.status(500).json({ message: 'Database Error', error: err.message });
+    }
 });
 
-// --- GET USER (PROFILE) ---
-// Ini route yang Postman kamu cari!
-router.get('/me', verifyToken, (req, res) => {
-    const db = require('../config/db'); // Pastikan path config DB benar
-    const query = "SELECT id, name, email FROM users WHERE id = ?";
-    
-    db.query(query, [req.userId], (err, results) => {
-        if (err) return res.status(500).json({ message: "Error Database" });
-        if (results.length === 0) return res.status(404).json({ message: "User tidak ditemukan" });
-        res.json(results[0]);
-    });
+// --- GET PROFILE (ROUTE ME) ---
+// Route ini dilindungi oleh middleware verifyToken
+router.get('/users', verifyToken, async (req, res) => {
+    try {
+        // Query ambil semua user (tanpa WHERE id)
+        // Kita tetap sembunyikan password agar aman
+        const [users] = await db.promise().query('SELECT id, name, email, created_at FROM users');
+        
+        res.json(users);
+    } catch (err) {
+        console.error("Get Users Error:", err);
+        res.status(500).json({ message: 'Server Error', error: err.message });
+    }
 });
+
+module.exports = router;
 
 module.exports = router;

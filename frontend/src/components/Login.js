@@ -10,30 +10,34 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Pastikan URL ini sesuai dengan route di backend kamu
-      // Biasanya: http://localhost:5000/api/auth/login atau semacamnya
-    const response = await axios.post('http://localhost:5000/api/auth/login', {
-    email: email,
-    password: password
-    });
+      // Pastikan URL mengarah ke port 5000 backend
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email: email,
+        password: password
+      });
 
       console.log('Login Berhasil:', response.data);
+      
+      // Simpan data user/token di localStorage agar sesi bertahan
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+      if (response.data.accessToken) {
+        localStorage.setItem('token', response.data.accessToken);
+      }
+
       alert('Login Berhasil!');
-      
-      // Simpan token jika ada (opsional, nanti kita bahas)
-      // localStorage.setItem('token', response.data.token);
-      
-      // Pindah ke halaman dashboard/home
       navigate('/dashboard'); 
 
     } catch (error) {
-      console.error('Error:', error);
-      alert('Login Gagal: ' + (error.response?.data?.message || error.message));
+      console.error('Error Details:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Login Gagal';
+      alert('Login Gagal: ' + errorMessage);
     }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', maxWidth: '400px', margin: 'auto' }}>
       <h2>Halaman Login</h2>
       <form onSubmit={handleLogin}>
         <div>
@@ -43,18 +47,20 @@ const Login = () => {
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
             required 
+            style={{ width: '100%', marginBottom: '10px' }}
           />
         </div>
-        <div style={{ marginTop: '10px' }}>
+        <div>
           <label>Password: </label>
           <input 
             type="password" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
             required 
+            style={{ width: '100%', marginBottom: '10px' }}
           />
         </div>
-        <button type="submit" style={{ marginTop: '20px' }}>Login</button>
+        <button type="submit" style={{ width: '100%', padding: '10px' }}>Login</button>
       </form>
     </div>
   );

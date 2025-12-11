@@ -1,21 +1,22 @@
 version: '3.8'
 
 services:
-  # 1. Service Database (Pengganti XAMPP MySQL)
+  # 1. Service Database
   db:
     image: mysql:8.0
     container_name: diet-app-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password  # Password database
       MYSQL_DATABASE: health_db
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-proot"]
-      interval: 5s
-      retries: 10
-
+      # FIX: Menggunakan password yang benar (-ppassword) untuk cek kesehatan
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # 2. Service Backend
   backend:
@@ -24,29 +25,27 @@ services:
     ports:
       - "5000:5000"
     environment:
+      - PORT=5000
       - DB_HOST=diet-app-db
       - DB_USER=root
-      - DB_PASSWORD=root
+      - DB_PASSWORD=password  # FIX: Harus sama dengan MYSQL_ROOT_PASSWORD
       - DB_NAME=health_db
       - JWT_SECRET=rahasia_negara_api_123
     depends_on:
       db:
         condition: service_healthy
 
-
-
   # 3. Service Frontend
-# 3. Service Frontend
   frontend:
     build: ./frontend
     container_name: diet-app-frontend
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend/src:/app/src  # <--- INI JEMBATANNYA
+      - ./frontend/src:/app/src
     environment:
       - REACT_APP_API_URL=http://localhost:5000/api
-      - WATCHPACK_POLLING=true   # <--- PENTING BUAT WINDOWS AGAR AUTO-RELOAD JALAN
+      - WATCHPACK_POLLING=true
     stdin_open: true
     tty: true
     depends_on:
