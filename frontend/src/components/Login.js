@@ -12,10 +12,10 @@ const Login = () => {
     try {
       // Pastikan URL ini sesuai dengan route di backend kamu
       // Biasanya: http://localhost:5000/api/auth/login atau semacamnya
-      const response = await axios.post('http://localhost:5000/login', {
-        email: email,
-        password: password
-      });
+    const response = await axios.post('http://localhost:5000/api/auth/login', {
+    email: email,
+    password: password
+    });
 
       console.log('Login Berhasil:', response.data);
       alert('Login Berhasil!');
