@@ -1,15 +1,21 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const mysql = require('mysql2');
+const dotenv = require('dotenv');
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'dietdb',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASS || 'password',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    dialect: 'mysql',
-    logging: false
-  }
-);
+dotenv.config();
 
-module.exports = sequelize;
+const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+});
+
+db.connect((err) => {
+    if (err) {
+        console.error('❌ Error connecting to MySQL:', err);
+    } else {
+        console.log('✅ Connected to MySQL Database');
+    }
+});
+
+module.exports = db;

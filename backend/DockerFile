@@ -1,7 +1,20 @@
+# Gunakan Node versi terbaru
 FROM node:18-alpine
+
+# Buat folder kerja di dalam container
 WORKDIR /app
+
+# Copy file package.json dulu (biar cache installnya awet)
 COPY package*.json ./
-RUN npm ci --production
+
+# Install dependencies
+RUN npm install
+
+# Copy seluruh kodingan ke dalam container
 COPY . .
-EXPOSE 4000
-CMD ["node", "src/index.js"]
+
+# Buka port 5000
+EXPOSE 5000
+
+# Perintah untuk menjalankan backend
+CMD ["npm", "start"]

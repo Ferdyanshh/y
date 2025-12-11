@@ -1,15 +1,23 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const db = require('../config/db');
 
-const User = sequelize.define('User', {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  email: { type: DataTypes.STRING, allowNull: false, unique: true },
-  password: { type: DataTypes.STRING, allowNull: false },
-  current_weight: { type: DataTypes.FLOAT, defaultValue: 0 },
-  target_weight: { type: DataTypes.FLOAT, defaultValue: 0 }
-}, {
-  tableName: 'users',
-  timestamps: true
-});
+const User = {
+    // Cari user berdasarkan email
+    findByEmail: (email, callback) => {
+        const query = 'SELECT * FROM users WHERE email = ?';
+        db.query(query, [email], (err, results) => {
+            if (err) return callback(err, null);
+            return callback(null, results[0]);
+        });
+    },
+
+    // Buat user baru
+    create: (data, callback) => {
+        const query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+        db.query(query, [data.name, data.email, data.password], (err, results) => {
+            if (err) return callback(err, null);
+            return callback(null, results);
+        });
+    }
+};
 
 module.exports = User;
