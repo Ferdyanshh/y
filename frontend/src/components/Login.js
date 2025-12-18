@@ -11,7 +11,7 @@ const Login = () => {
     e.preventDefault();
     try {
       // Pastikan URL mengarah ke port 5000 backend
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post('http://localhost:8000/api/auth/login', {
         email: email,
         password: password
       });
