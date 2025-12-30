@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: diet-app-backend
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: ocha123/diet-backend:latest  # <--- GANTI kalau usernamenya beda
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PORT
+          value: "8000"
+        - name: DB_HOST
+          value: "diet-app-db"
+        - name: DB_USER
+          value: "root"
+        - name: DB_PASSWORD
+          value: "password"
+        - name: DB_NAME
+          value: "health_db"
+        - name: JWT_SECRET
+          value: "rahasia_negara_api_123"
