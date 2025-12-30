@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Database (Sudah Aman)
   db:
     image: mysql:8.0
     container_name: diet-app-db
@@ -42,7 +41,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend/src:/app/src
-      - /app/node_modules  # <--- INI PENGAMANNYA (Jangan Dihapus!)
+      - /app/node_modules
     environment:
       - REACT_APP_API_URL=http://localhost:8000/api
       - WATCHPACK_POLLING=true

@@ -6,7 +6,6 @@ const TargetSetup = () => {
     const [target, setTarget] = useState('');
     const navigate = useNavigate();
 
-    // --- PALET WARNA ---
     const colors = {
         bgMain: '#dda3b2',
         bgCard: '#fff0f5',
@@ -19,8 +18,7 @@ const TargetSetup = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
-        
-        // 1. Ambil token terbaru
+
         const token = localStorage.getItem('token');
         console.log("1. Token saat ini:", token);
 
@@ -32,15 +30,11 @@ const TargetSetup = () => {
 
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            // 2. Pastikan data dikirim sebagai ANGKA (Float/Number), bukan String
+
             const payload = { target_weight: parseFloat(target) };
             
             console.log("2. Mengirim data ke server:", payload);
 
-            // --- PERHATIKAN ENDPOINT INI ---
-            // Asumsi endpoint update profil adalah '/api/auth/update'
-            // Kalau backend kamu pakai endpoint lain (misal '/api/user'), ganti di sini!
             const res = await axios.put('http://localhost:8000/api/auth/update', payload, config);
 
             console.log("3. Berhasil simpan!", res.data);
@@ -49,9 +43,7 @@ const TargetSetup = () => {
         } catch (err) {
             console.error("ERROR SAVE TARGET:", err);
 
-            // --- DEBUGGING ERROR ---
             if (err.response) {
-                // Error dari Backend (4xx atau 5xx)
                 const status = err.response.status;
                 const msg = err.response.data.message || JSON.stringify(err.response.data);
                 
@@ -66,7 +58,6 @@ const TargetSetup = () => {
                     alert(`Gagal Simpan (${status}): ${msg}`);
                 }
             } else if (err.request) {
-                // Tidak ada respon dari server
                 alert("Server tidak merespon. Cek apakah backend jalan?");
             } else {
                 alert("Error Aplikasi: " + err.message);
@@ -94,9 +85,6 @@ const TargetSetup = () => {
                 margin: '20px',
                 textAlign: 'center'
             }}>
-                <div style={{ fontSize: '60px', marginBottom: '20px' }}>
-                   👑
-                </div>
                 
                 <h2 style={{ color: colors.textDark, margin: '0 0 10px 0' }}>Atur Target Impianmu</h2>
                 <p style={{ color: colors.textLight, marginBottom: '30px' }}>

@@ -2,31 +2,13 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 const db = require('../config/db');
 
-// --- MIDDLEWARE VERIFIKASI TOKEN ---
-const verifyToken = (req, res, next) => {
-    const tokenHeader = req.headers['authorization'];
-    
-    if (!tokenHeader) {
-        return res.status(403).json({ message: 'Akses ditolak! Token tidak tersedia.' });
-    }
+const verifyToken = require('../middleware/auth');
 
-    const token = tokenHeader.split(' ')[1]; 
-    if (!token) {
-        return res.status(403).json({ message: 'Format token salah!' });
-    }
+dotenv.config();
 
-    jwt.verify(token, process.env.JWT_SECRET || 'secret', (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: 'Token tidak valid atau kadaluarsa!' });
-        }
-        req.userId = decoded.id;
-        next();
-    });
-};
-
-// --- REGISTER ---
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -43,7 +25,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// --- LOGIN ---
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -56,13 +37,14 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Password Salah!' });
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET || 'secret', { expiresIn: 86400 });
+        const secretKey = process.env.JWT_SECRET || 'rahasia_negara_api_123';
+        
+        const token = jwt.sign({ id: user.id }, secretKey, { expiresIn: 86400 });
 
-        // Kirim token dan data user (termasuk target_weight kalau ada)
         res.json({ 
             message: 'Login Sukses', 
-            token, // Backend kirim key "token"
-            access_token: token, // Opsional: kirim "access_token" juga biar frontend Login.js kamu lgsg jalan
+            token, 
+            access_token: token, 
             user: { 
                 name: user.name, 
                 email: user.email,
@@ -74,7 +56,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// --- GET PROFILE (ROUTE ME) ---
 router.get('/me', verifyToken, async (req, res) => {
     try {
         const [users] = await db.promise().query(
@@ -90,7 +71,6 @@ router.get('/me', verifyToken, async (req, res) => {
     }
 });
 
-// --- UPDATE TARGET WEIGHT (INI YANG BARU) ---
 router.put('/update', verifyToken, async (req, res) => {
     const { target_weight } = req.body;
 
@@ -111,7 +91,55 @@ router.put('/update', verifyToken, async (req, res) => {
     }
 });
 
-// --- GET ALL USERS ---
+router.put('/update-profile', verifyToken, async (req, res) => {
+    const { name, email, password, target_weight } = req.body;
+    const userId = req.userId;
+
+    try {
+        let fields = [];
+        let values = [];
+
+        if (name) { fields.push('name = ?'); values.push(name); }
+        if (email) { fields.push('email = ?'); values.push(email); }
+        if (target_weight) { fields.push('target_weight = ?'); values.push(target_weight); }
+        if (password) {
+            const hash = bcrypt.hashSync(password, 8);
+            fields.push('password = ?');
+            values.push(hash);
+        }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ message: 'Tidak ada data yang diubah.' });
+        }
+
+        values.push(userId);
+        const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+
+        await db.promise().query(sql, values);
+
+        res.json({ message: 'Profil berhasil diperbarui!' });
+    } catch (err) {
+        console.error("Update Profile Error:", err);
+        res.status(500).json({ message: 'Gagal update profil', error: err.message });
+    }
+});
+
+router.delete('/delete-account', verifyToken, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const [result] = await db.promise().query('DELETE FROM users WHERE id = ?', [userId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'User tidak ditemukan.' });
+        }
+
+        res.json({ message: 'Akun berhasil dihapus permanent. Sampai jumpa!' });
+    } catch (err) {
+        console.error("Delete Account Error:", err);
+        res.status(500).json({ message: 'Gagal menghapus akun', error: err.message });
+    }
+});
+
 router.get('/users', verifyToken, async (req, res) => {
     try {
         const [users] = await db.promise().query('SELECT id, name, email, created_at FROM users');

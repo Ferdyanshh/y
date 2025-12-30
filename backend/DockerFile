@@ -1,20 +1,13 @@
-# Gunakan Node versi terbaru
 FROM node:18-alpine
 
-# Buat folder kerja di dalam container
 WORKDIR /app
 
-# Copy file package.json dulu (biar cache installnya awet)
 COPY package*.json ./
 
-# Install dependencies
 RUN npm install
 
-# Copy seluruh kodingan ke dalam container
 COPY . .
 
-# Buka port 5000
 EXPOSE 5000
 
-# Perintah untuk menjalankan backend
 CMD ["npm", "start"]

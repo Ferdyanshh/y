@@ -1,12 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
-
-// --- PERBAIKAN PENTING ---
-// Kita panggil file 'auth' karena file kamu namanya backend/src/middleware/auth.js
 const verifyToken = require('../middleware/auth'); 
 
-// 1. GET: Ambil Data Grafik
 router.get('/', verifyToken, async (req, res) => {
     try {
         const [logs] = await db.promise().query(
@@ -20,7 +16,6 @@ router.get('/', verifyToken, async (req, res) => {
     }
 });
 
-// 2. POST: Input Berat Harian
 router.post('/', verifyToken, async (req, res) => {
     const { weight, date, notes } = req.body;
     try {
@@ -35,17 +30,15 @@ router.post('/', verifyToken, async (req, res) => {
     }
 });
 
-// 3. PUT: Update Target Berat Badan
 router.put('/target', verifyToken, async (req, res) => {
     const { targetWeight } = req.body;
-    
-    // Validasi input
+
     if (!targetWeight) {
         return res.status(400).json({ message: 'Target berat harus diisi!' });
     }
 
     try {
-        console.log(`Updating target for user ${req.userId} to ${targetWeight}`); // Cek log terminal
+        console.log(`Updating target for user ${req.userId} to ${targetWeight}`); 
         
         await db.promise().query(
             'UPDATE users SET target_weight = ? WHERE id = ?',

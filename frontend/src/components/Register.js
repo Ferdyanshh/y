@@ -8,7 +8,6 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    // --- PALET WARNA TEMA ---
     const colors = {
         bgMain: '#dda3b2',
         bgCard: '#fff0f5',
@@ -49,7 +48,7 @@ const Register = () => {
                 margin: '20px'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <h1 style={{ color: colors.textDark, margin: '0 0 10px 0' }}>Buat Akun Baru ✨</h1>
+                    <h1 style={{ color: colors.textDark, margin: '0 0 10px 0' }}>Buat Akun Baru</h1>
                     <p style={{ color: colors.textLight }}>Ayo mulai perjalanan sehatmu!</p>
                 </div>
 

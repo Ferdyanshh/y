@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Login from './components/Login';
 
-// Komponen Home Sederhana
 const Home = () => (
   <div style={{ textAlign: 'center', marginTop: '50px' }}>
     <h1>Selamat Datang di Diet App</h1>
@@ -12,7 +11,6 @@ const Home = () => (
   </div>
 );
 
-// Komponen Dashboard Sederhana (Hanya bisa diakses setelah login - simulasi)
 const Dashboard = () => (
   <div style={{ textAlign: 'center', marginTop: '50px' }}>
     <h1>Ini Dashboard</h1>
@@ -28,7 +26,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* Nanti tambahkan Route Register di sini */}
       </Routes>
     </Router>
   );

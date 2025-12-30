@@ -6,33 +6,28 @@ import {
 } from 'recharts';
 
 const Dashboard = () => {
-    // State user & data
     const [user, setUser] = useState({ name: 'Teman', target_weight: null });
     const [weights, setWeights] = useState([]);
-    
-    // State Input Harian
+
     const [weightInput, setWeightInput] = useState('');
     const [dateInput, setDateInput] = useState(new Date().toISOString().split('T')[0]);
-    
-    // State Waktu Makan
+
     const [mealTime, setMealTime] = useState('Pagi');
 
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    // --- PALET WARNA (Tetap sesuai request) ---
     const colors = {
-        bgMain: '#dda3b2',      // Dusty Pink Background
-        bgCard: '#fff0f5',      // Card Putih kemerahan
-        primary: '#e85d92',     // Pink Tua (Chart Line & Button)
-        textDark: '#6d4555',    // Text Utama
-        textLight: '#9e7788',   // Text Sekunder
-        gold: '#facc15',        // Target / Highlight
+        bgMain: '#dda3b2',      
+        bgCard: '#fff0f5',      
+        primary: '#e85d92',      
+        textDark: '#6d4555',    
+        textLight: '#9e7788',  
+        gold: '#facc15',        
         white: '#ffffff'
     };
 
-    // --- 1. CEK WAKTU ---
     useEffect(() => {
         const hour = new Date().getHours();
         if (hour >= 4 && hour < 11) setMealTime('Pagi');
@@ -41,7 +36,6 @@ const Dashboard = () => {
         else setMealTime('Malam');
     }, []);
 
-    // --- DATA REKOMENDASI ---
     const recommendations = {
         'Pagi': { title: '🌞 Sarapan Berenergi', items: [{ icon: '🍞', type: 'Karbo', name: 'Roti Gandum' }, { icon: '🥚', type: 'Lauk', name: 'Telur Rebus' }, { icon: '🥗', type: 'Sayur', name: 'Salad' }, { icon: '🍌', type: 'Buah', name: 'Pisang' }] },
         'Siang': { title: '☀️ Makan Siang Sehat', items: [{ icon: '🍚', type: 'Karbo', name: 'Nasi Merah' }, { icon: '🍗', type: 'Lauk', name: 'Ayam Bakar' }, { icon: '🥦', type: 'Sayur', name: 'Capcay' }, { icon: '🍊', type: 'Buah', name: 'Jeruk' }] },
@@ -49,7 +43,6 @@ const Dashboard = () => {
         'Malam': { title: '🌙 Makan Malam Ringan', items: [{ icon: '🌽', type: 'Karbo', name: 'Jagung' }, { icon: '🐟', type: 'Lauk', name: 'Ikan Tim' }, { icon: '🥬', type: 'Sayur', name: 'Sup Bayam' }, { icon: '💧', type: 'Minum', name: 'Air Hangat' }] }
     };
 
-    // --- 2. FETCH DATA ---
     const fetchData = useCallback(async () => {
         try {
             if (!token) { navigate('/login'); return; }
@@ -87,7 +80,7 @@ const Dashboard = () => {
         const style = { padding: '15px', borderRadius: '15px', marginBottom: '20px', textAlign: 'center', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: `2px solid ${colors.textDark}` };
 
         if (diff === 0) return <div style={{...style, background: colors.gold, color: colors.textDark}}><h3>🎉 CIEEE SELAMAT, TARGETMU SUDAH TERCAPAII!!! 👑</h3><p>Beratmu pas di {target} kg.</p></div>;
-        if (diff <= 2) return <div style={{...style, background: colors.primary, color: 'white'}}><h3>🔥 KAMU HEBAT!</h3><p>Tinggal {diff.toFixed(1)} kg lSgi!</p></div>;
+        if (diff <= 2) return <div style={{...style, background: colors.primary, color: 'white'}}><h3>🔥 KAMU HEBAT!</h3><p>Tinggal {diff.toFixed(1)} kg lagi!</p></div>;
         return <div style={{...style, background: colors.bgCard, color: colors.textDark}}><h3>💪 Ayooo kamu pasti bisa!</h3><p>Sisa {diff.toFixed(1)} kg menuju target.</p></div>;
     };
 
@@ -95,19 +88,21 @@ const Dashboard = () => {
         <div style={{ minHeight: '100vh', background: colors.bgMain, fontFamily: 'Arial, sans-serif', padding: '20px' }}>
             <div style={{ maxWidth: '800px', margin: '0 auto' }}>
                 
-                {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                     <h2 style={{ color: colors.textDark, fontWeight: 'bold', fontSize: '28px' }}>Halo, {user.name}! 👋</h2>
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <Link to="/target-setup" style={{ padding: '8px 15px', background: colors.gold, color: colors.textDark, textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold', border: `2px solid ${colors.textDark}` }}>Target</Link>
+                        
+                        <Link to="/profile" style={{ padding: '8px 15px', background: colors.white, color: colors.primary, textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold', border: `2px solid ${colors.primary}` }}>Profile</Link>
+
                         <button onClick={() => { localStorage.removeItem('token'); navigate('/login'); }} style={{ padding: '8px 15px', background: colors.textDark, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Logout</button>
                     </div>
                 </div>
 
-                {/* Pesan Motivasi */}
+                
+
                 {renderMotivationMessage()}
 
-                {/* Rekomendasi Menu */}
                 <div style={{ marginBottom: '30px', background: colors.bgCard, padding: '25px', borderRadius: '20px', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
                     <h3 style={{ margin: '0 0 20px 0', color: colors.primary, display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ background: colors.primary, color: 'white', padding: '5px 10px', borderRadius: '8px', fontSize: '14px' }}>MENU</span> {recommendations[mealTime].title}
@@ -123,12 +118,10 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* GRAFIK (Fixed Margin) */}
                 <div style={{ marginBottom: '30px', background: 'white', padding: '25px', borderRadius: '20px', boxShadow: '0 10px 20px rgba(0,0,0,0.05)' }}>
                     <h3 style={{ textAlign: 'center', marginTop: 0, color: colors.textDark }}>📉 Grafik Perkembangan Kamu!</h3>
                     <div style={{ height: '300px' }}>
                         <ResponsiveContainer width="100%" height="100%">
-                            {/* DISINI PERUBAHAN MARGINNYA: right: 60 */}
                             <LineChart data={weights} margin={{ top: 5, right: 60, bottom: 5, left: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                                 <XAxis dataKey="date" tick={{ fill: colors.textLight }} />
@@ -141,7 +134,6 @@ const Dashboard = () => {
                                         stroke={colors.gold} 
                                         strokeDasharray="5 5" 
                                         strokeWidth={3}
-                                        // Label aman karena margin chart sudah dilebarkan
                                         label={{ position: 'right', value: 'Target', fill: colors.gold, fontSize: 12, fontWeight: 'bold' }} 
                                     />
                                 )}
@@ -150,7 +142,6 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Form Input */}
                 <div style={{ background: colors.bgCard, padding: '25px', borderRadius: '20px', border: `1px solid ${colors.bgMain}` }}>
                     <h3 style={{ margin: '0 0 15px 0', color: colors.textDark }}>✏️ Catat Berat Hari Ini</h3>
                     <form onSubmit={handleAddWeight} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>

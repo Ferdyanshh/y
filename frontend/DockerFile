@@ -4,12 +4,9 @@ WORKDIR /app
 
 COPY package.json ./
 
-# Hapus cache npm dan install dependencies dengan bersih
 RUN npm cache clean --force
 RUN npm install
 
-# Copy sisa file
 COPY . .
 
-# Jalankan server
 CMD ["npm", "start"]

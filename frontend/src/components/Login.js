@@ -7,7 +7,6 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    // --- PALET WARNA TEMA ---
     const colors = {
         bgMain: '#dda3b2',
         bgCard: '#fff0f5',
@@ -24,10 +23,8 @@ const Login = () => {
             console.log("1. Mengirim data login...", { email, password });
             const res = await axios.post('http://localhost:8000/api/auth/login', { email, password });
             
-            // --- DEBUGGING PENTING ---
             console.log("2. Respon Server Login:", res.data); 
 
-            // Cek nama tokennya: bisa 'access_token' atau cuma 'token'
             const token = res.data.access_token || res.data.token;
 
             if (!token) {
@@ -35,11 +32,9 @@ const Login = () => {
                 return;
             }
 
-            // Simpan token yang benar
             localStorage.setItem('token', token);
             console.log("3. Token tersimpan:", token);
 
-            // 2. CEK DATA USER
             try {
                 const userRes = await axios.get('http://localhost:8000/api/auth/me', {
                     headers: { Authorization: `Bearer ${token}` }
@@ -48,11 +43,8 @@ const Login = () => {
                 const userData = userRes.data;
                 console.log("4. Data User:", userData);
 
-                // --- LOGIC PENENTU HALAMAN ---
-                // Konversi ke float untuk memastikan angka '0.00' dianggap 0
                 const target = parseFloat(userData.target_weight);
 
-                // Jika target tidak ada (NaN) atau 0, lempar ke Setup
                 if (!target || target === 0) {
                     console.log("Target belum ada/0, ke Target Setup");
                     navigate('/target-setup'); 
@@ -63,7 +55,6 @@ const Login = () => {
 
             } catch (userErr) {
                 console.error("Gagal ambil data user:", userErr);
-                // Jangan paksa ke dashboard dulu kalau errornya 401, biar ketahuan
                 if (userErr.response && userErr.response.status === 401) {
                     alert("Sesi tidak valid (401). Cek token backend.");
                 } else {
@@ -97,7 +88,7 @@ const Login = () => {
                 margin: '20px'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <h1 style={{ color: colors.textDark, margin: '0 0 10px 0' }}>Selamat Datang! 👋</h1>
+                    <h1 style={{ color: colors.textDark, margin: '0 0 10px 0' }}>Selamat Datang!</h1>
                     <p style={{ color: colors.textLight }}>Silakan masuk untuk melanjutkan dietmu.</p>
                 </div>
 

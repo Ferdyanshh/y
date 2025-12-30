@@ -3,13 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-ro
 import Login from './components/Login';
 import Register from './components/Register';
 import TargetSetup from './pages/TargetSetup';
-
-// PENTING: Import ini memanggil file Dashboard canggih yang baru kita buat
 import Dashboard from './pages/dashboard';
 
-// Halaman Home Sederhana
+import Profile from './pages/profile'; 
+
 const Home = () => {
-  // Cek kalau user sudah login, langsung lempar ke dashboard
   const token = localStorage.getItem('token');
   if (token) return <Navigate to="/dashboard" />;
 
@@ -17,7 +15,6 @@ const Home = () => {
     <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Arial' }}>
       <h1>🥗 Diet App</h1>
       <p>Aplikasi pencatat berat badan simpel & mudah.</p>
-      
       <div style={{ marginTop: '20px' }}>
         <Link to="/login" style={{ marginRight: '15px', fontSize: '18px' }}>Login</Link>
         <Link to="/register" style={{ fontSize: '18px' }}>Register</Link>
@@ -34,9 +31,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* 2. TAMBAHKAN ROUTE INI */}
         <Route path="/target-setup" element={<TargetSetup />} />
+
+        <Route path="/profile" element={<Profile />} />
         
       </Routes>
     </Router>
