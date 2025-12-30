@@ -2,17 +2,33 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+// Baca konfigurasi .env
 dotenv.config();
 
 const app = express();
+
+// --- Middleware ---
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Supaya bisa baca JSON dari frontend
 
-// Routes Auth
-app.use('/api/auth', require('./src/routes/auth'));
+// --- Import Routes ---
+// Import file route auth & weight di sini
+const authRoutes = require('./src/routes/auth');
+const weightRoutes = require('./src/routes/weights'); 
 
-// Cek status
-app.get('/', (req, res) => res.send('Server Backend Siap!'));
+// --- Gunakan Routes ---
+// Daftarkan route SEBELUM server dijalankan (app.listen)
+app.use('/api/auth', authRoutes);
+app.use('/api/weights', weightRoutes); 
 
+// --- Route Cek Status (Test) ---
+app.get('/', (req, res) => {
+    res.send('Server Backend Siap! (Port 8000)');
+});
+
+// --- Jalankan Server ---
+// Bagian ini WAJIB ditaruh paling bawah
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server jalan di port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server jalan di port ${PORT}`);
+});

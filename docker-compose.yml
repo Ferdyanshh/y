@@ -1,24 +1,23 @@
 version: '3.8'
 
 services:
-  # 1. Service Database
+  # Database (Sudah Aman)
   db:
     image: mysql:8.0
     container_name: diet-app-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: password  # Password database
+      MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: health_db
     ports:
       - "3306:3306"
     healthcheck:
-      # FIX: Menggunakan password yang benar (-ppassword) untuk cek kesehatan
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # 2. Service Backend
+  # Backend (Sudah Aman - Port 8000)
   backend:
     build: ./backend
     container_name: diet-app-backend
@@ -28,14 +27,14 @@ services:
       - PORT=8000
       - DB_HOST=diet-app-db
       - DB_USER=root
-      - DB_PASSWORD=password  # FIX: Harus sama dengan MYSQL_ROOT_PASSWORD
+      - DB_PASSWORD=password
       - DB_NAME=health_db
       - JWT_SECRET=rahasia_negara_api_123
     depends_on:
       db:
         condition: service_healthy
 
-  # 3. Service Frontend
+  # Frontend (PERBAIKAN DISINI)
   frontend:
     build: ./frontend
     container_name: diet-app-frontend
@@ -43,6 +42,7 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend/src:/app/src
+      - /app/node_modules  # <--- INI PENGAMANNYA (Jangan Dihapus!)
     environment:
       - REACT_APP_API_URL=http://localhost:8000/api
       - WATCHPACK_POLLING=true

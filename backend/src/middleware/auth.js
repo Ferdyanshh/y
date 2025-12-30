@@ -1,58 +1,31 @@
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// Perhatikan baris di bawah ini, pastikan tulisannya 'model' bukan 'models'
-const User = require('../model/user');
+const dotenv = require('dotenv');
 
-// REGISTER
-router.post('/register', (req, res) => {
-    const { name, email, password } = req.body;
+dotenv.config();
 
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: 'Semua field harus diisi' });
+const verifyToken = (req, res, next) => {
+    const tokenHeader = req.headers['authorization'];
+    
+    // Cek apakah ada header Authorization
+    if (!tokenHeader) {
+        return res.status(403).json({ message: 'Akses ditolak! Token tidak tersedia.' });
     }
 
-    User.findByEmail(email, (err, user) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (user) return res.status(400).json({ message: 'Email sudah terdaftar' });
+    // Format token "Bearer <token>"
+    const token = tokenHeader.split(' ')[1]; 
+    if (!token) {
+        return res.status(403).json({ message: 'Format token salah!' });
+    }
 
-        const hashedPassword = bcrypt.hashSync(password, 8);
-
-        User.create({ name, email, password: hashedPassword }, (err, result) => {
-            if (err) return res.status(500).json({ message: 'Gagal mendaftarkan user' });
-            res.status(201).json({ message: 'Registrasi berhasil' });
-        });
-    });
-});
-
-// LOGIN
-router.post('/login', (req, res) => {
-    const { email, password } = req.body;
-
-    User.findByEmail(email, (err, user) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (!user) return res.status(404).json({ message: 'User tidak ditemukan' });
-
-        const passwordIsValid = bcrypt.compareSync(password, user.password);
-        if (!passwordIsValid) {
-            return res.status(401).json({ message: 'Password salah' });
+    // Verifikasi token
+    jwt.verify(token, process.env.JWT_SECRET || 'rahasia_negara_api_123', (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Token tidak valid atau kadaluarsa!' });
         }
-
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-            expiresIn: 86400
-        });
-
-        res.status(200).json({
-            message: 'Login berhasil',
-            accessToken: token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email
-            }
-        });
+        // Simpan ID user ke request
+        req.userId = decoded.id;
+        next();
     });
-});
+};
 
-module.exports = router;
+module.exports = verifyToken;

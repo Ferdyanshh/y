@@ -1,34 +1,30 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
+import TargetSetup from './pages/TargetSetup';
 
-// Halaman Dashboard Simpel (Setelah Login)
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+// PENTING: Import ini memanggil file Dashboard canggih yang baru kita buat
+import Dashboard from './pages/dashboard';
 
-  const logout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
+// Halaman Home Sederhana
+const Home = () => {
+  // Cek kalau user sudah login, langsung lempar ke dashboard
+  const token = localStorage.getItem('token');
+  if (token) return <Navigate to="/dashboard" />;
 
   return (
-    <div style={{ textAlign: 'center', marginTop: 50 }}>
-      <h1>Halo, {user.name || 'User'}!</h1>
-      <p>Kamu berhasil login.</p>
-      <button onClick={logout} style={{ padding: '10px 20px', background: 'red', color: 'white' }}>Logout</button>
+    <div style={{ textAlign: 'center', marginTop: '100px', fontFamily: 'Arial' }}>
+      <h1>🥗 Diet App</h1>
+      <p>Aplikasi pencatat berat badan simpel & mudah.</p>
+      
+      <div style={{ marginTop: '20px' }}>
+        <Link to="/login" style={{ marginRight: '15px', fontSize: '18px' }}>Login</Link>
+        <Link to="/register" style={{ fontSize: '18px' }}>Register</Link>
+      </div>
     </div>
   );
 };
-
-// Halaman Utama
-const Home = () => (
-  <div style={{ textAlign: 'center', marginTop: 50 }}>
-    <h1>Selamat Datang</h1>
-    <Link to="/login">Login</Link> | <Link to="/register">Register</Link>
-  </div>
-);
 
 function App() {
   return (
@@ -38,6 +34,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* 2. TAMBAHKAN ROUTE INI */}
+        <Route path="/target-setup" element={<TargetSetup />} />
+        
       </Routes>
     </Router>
   );
